@@ -16,7 +16,7 @@ This site is a collection of simple browser-based games
   A fast-paced reaction game where you click the moving circle to earn points.  
   [Play it here](https://Alex23782.github.io/game-portfolio/games/game1/index.html)
 
-<!-- Add more games as yo build them --!>
+<!-- Add more games as you build them --!>
 
 ---
 
