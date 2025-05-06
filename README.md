@@ -1,5 +1,5 @@
 # 🎮 Homework Helper
-Welcome to my personal game portfolio website!  
+Welcome to the Homework Helper  
 This site is a collection of simple browser-based games
 
 
