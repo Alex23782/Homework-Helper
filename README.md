@@ -1,11 +1,10 @@
-# 🎮 My Game Portfolio
-
+# 🎮 Homework Helper
 Welcome to my personal game portfolio website!  
 This site is a collection of simple browser-based games
 
 
 
-[https://Alex23782/.github.io/game-portfolio](https://Alex23782.github.io/game-portfolio)  
+[https://Alex23782/.github.io/game-portfolio](https://Alex23782.github.io/game-portfolio-)  
 
 
 ---
