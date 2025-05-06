@@ -4,7 +4,7 @@ This site is a collection of simple browser-based games
 
 
 
-[https://Alex23782/.github.io/game-portfolio](https://Alex23782.github.io/game-portfolio-)  
+[https://Alex23782/.github.io/game-portfolio](https://alex23782.github.io/Homework-Helper.github.io/) 
 
 
 ---
@@ -13,7 +13,7 @@ This site is a collection of simple browser-based games
 
 - **Click the Circle**  
   A fast-paced reaction game where you click the moving circle to earn points.  
-  [Play it here](https://Alex23782.github.io/game-portfolio/games/game1/index.html)
+  [Play it here](https://alex23782.github.io/Homework-Helper.github.io/)
 
 <!-- Add more games as you build them --!>
 
