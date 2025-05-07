@@ -1,36 +1,64 @@
-let score = 0;
-let highScore = 0;
-let timeLeft = 10;
-let timerStarted = false;
-let countdown;
+// 1. Setup the scene, camera, and renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
 
-function increaseScore() {
-  if (!timerStarted) {
-    startTimer();
-    timerStarted = true;
-  }
+// 2. Create the car (simple box shape for now)
+const carGeometry = new THREE.BoxGeometry(1, 0.5, 2);
+const carMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const car = new THREE.Mesh(carGeometry, carMaterial);
+scene.add(car);
 
-  if (timeLeft > 0) {
-    score++;
-    document.getElementById("score").innerText = "Score: " + score;
-  }
+// 3. Create the ground (a simple plane)
+const groundGeometry = new THREE.PlaneGeometry(100, 100);
+const groundMaterial = new THREE.MeshBasicMaterial({ color: 0x808080, side: THREE.DoubleSide });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = Math.PI / -2; // Rotate the ground to be flat
+scene.add(ground);
+
+// 4. Set up camera position
+camera.position.z = 5;
+camera.position.y = 2;
+
+// 5. Handle basic controls
+let carSpeed = 0;
+let carRotation = 0;
+
+function handleInput() {
+    // Simple WASD controls for moving the car
+    if (keyState['w']) carSpeed += 0.05; // Accelerate
+    if (keyState['s']) carSpeed -= 0.05; // Reverse
+    if (keyState['a']) carRotation += 0.05; // Turn left
+    if (keyState['d']) carRotation -= 0.05; // Turn right
+
+    // Apply basic physics (sliding effect for drift)
+    car.rotation.y += carRotation;
+    car.position.x += Math.sin(car.rotation.y) * carSpeed;
+    car.position.z += Math.cos(car.rotation.y) * carSpeed;
+
+    // Simple friction to slow down car
+    carSpeed *= 0.99; // Friction effect
 }
 
-function startTimer() {
-  const timerElement = document.getElementById("timer");
+// 6. Handle keyboard input state
+let keyState = {};
+window.addEventListener('keydown', (event) => { keyState[event.key] = true; });
+window.addEventListener('keyup', (event) => { keyState[event.key] = false; });
 
-  countdown = setInterval(() => {
-    timeLeft--;
-    timerElement.innerText = "Time left: " + timeLeft + "s";
-
-    if (timeLeft <= 0) {
-      clearInterval(countdown);
-      endGame();
-    }
-  }, 1000);
+// 7. Animate the scene
+function animate() {
+    requestAnimationFrame(animate);
+    handleInput(); // Update car position based on input
+    renderer.render(scene, camera);
 }
 
-function endGame() {
-  if (score > highScore) {
-    highScore = score;
-    document.getElementById("high-score").
+animate();
+
+// 8. Resize handling
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
