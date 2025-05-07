@@ -12,82 +12,70 @@
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
   <script>
-    // Scene setup
+    // Basic scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Ground setup
+    // Create a simple ground
     const groundGeo = new THREE.PlaneGeometry(100, 100);
-    const groundMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    const groundMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;  // Make it flat
-    ground.position.y = -0.25;  // Lower the ground slightly so the car is above it
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.5;
     scene.add(ground);
 
-    // Lighting setup
-    const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light (simulating the sun)
-    directionalLight.position.set(10, 10, 5); // Positioning the light
-    scene.add(directionalLight);
-
-    // Car setup (a simple cube for now)
+    // Create a simple car (box)
     const carGeo = new THREE.BoxGeometry(1, 0.5, 2);
-    const carMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const carMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
     const car = new THREE.Mesh(carGeo, carMat);
-    car.position.y = 0.25;  // Slightly above the ground
+    car.position.y = 0.25;  // Raise the car slightly above the ground
     scene.add(car);
 
-    // Camera positioning
-    camera.position.set(0, 2, -5); // Position camera behind the car
-    camera.lookAt(car.position); // Make sure the camera is looking at the car
+    // Camera positioned behind the car
+    camera.position.set(0, 2, -5);  // Set camera back from the car
+    camera.lookAt(car.position);
 
-    // Input tracking
+    // Input handling (simple controls for now)
     const keys = {};
     window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
     window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-    // Car physics
+    // Car movement
     let speed = 0;
     let turn = 0;
 
     function animate() {
       requestAnimationFrame(animate);
 
-      // Controls
+      // Basic controls for moving the car
       if (keys['w']) speed += 0.02;
       if (keys['s']) speed -= 0.02;
       if (keys['a']) turn += 0.03;
       if (keys['d']) turn -= 0.03;
 
-      // Apply rotation
+      // Rotate car based on speed and turn
       car.rotation.y += turn * speed;
 
-      // Movement
+      // Move car forward
       const dx = Math.sin(car.rotation.y) * speed;
       const dz = Math.cos(car.rotation.y) * speed;
       car.position.x += dx;
       car.position.z += dz;
 
-      // Friction
+      // Apply basic friction
       speed *= 0.98;
       turn *= 0.9;
 
-      // ✅ CAMERA FOLLOW FIX:
+      // Camera follows the car from behind
       const followDistance = 5;
       const heightOffset = 2;
-
       const forward = new THREE.Vector3(0, 0, 1);
-      forward.applyQuaternion(car.rotation);  // Use rotation directly from car
-
+      forward.applyQuaternion(car.rotation);  // Apply car's rotation
       camera.position.copy(car.position).sub(forward.multiplyScalar(followDistance));
-      camera.position.y += heightOffset;  // Add some height to the camera
-
-      // Always look at the car
+      camera.position.y += heightOffset;  // Offset for height
       camera.lookAt(car.position);
 
       // Render the scene
