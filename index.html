@@ -12,76 +12,73 @@
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
   <script>
-    // Set up the scene, camera, and renderer
+    // Scene setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Create a simple ground
-    const groundGeometry = new THREE.PlaneGeometry(100, 100);
-    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    // Ground
+    const groundGeo = new THREE.PlaneGeometry(100, 100);
+    const groundMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 10, 5);
-    scene.add(directionalLight);
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+    sun.position.set(10, 10, 5);
+    scene.add(sun);
 
-    // Create a basic car (cube)
-    const carGeometry = new THREE.BoxGeometry(1, 0.5, 2);
-    const carMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-    const car = new THREE.Mesh(carGeometry, carMaterial);
+    // Car (cube)
+    const carGeo = new THREE.BoxGeometry(1, 0.5, 2);
+    const carMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const car = new THREE.Mesh(carGeo, carMat);
     car.position.y = 0.25;
     scene.add(car);
 
-    // Set initial camera position
-    camera.position.set(0, 2, -5);
-    camera.lookAt(car.position);
-
     // Input tracking
-    const keyState = {};
-    window.addEventListener('keydown', (e) => keyState[e.key.toLowerCase()] = true);
-    window.addEventListener('keyup', (e) => keyState[e.key.toLowerCase()] = false);
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+    window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
     // Car physics
-    let carSpeed = 0;
-    let carRotation = 0;
+    let speed = 0;
+    let turn = 0;
 
     function animate() {
       requestAnimationFrame(animate);
 
-      // Car controls
-      if (keyState['w']) carSpeed += 0.02;
-      if (keyState['s']) carSpeed -= 0.02;
-      if (keyState['a']) carRotation += 0.03;
-      if (keyState['d']) carRotation -= 0.03;
+      // Controls
+      if (keys['w']) speed += 0.02;
+      if (keys['s']) speed -= 0.02;
+      if (keys['a']) turn += 0.03;
+      if (keys['d']) turn -= 0.03;
 
       // Apply rotation
-      car.rotation.y += carRotation * carSpeed;
+      car.rotation.y += turn * speed;
 
-      // Apply movement
-      const dx = Math.sin(car.rotation.y) * carSpeed;
-      const dz = Math.cos(car.rotation.y) * carSpeed;
+      // Movement
+      const dx = Math.sin(car.rotation.y) * speed;
+      const dz = Math.cos(car.rotation.y) * speed;
       car.position.x += dx;
       car.position.z += dz;
 
       // Friction
-      carSpeed *= 0.98;
-      carRotation *= 0.9;
+      speed *= 0.98;
+      turn *= 0.9;
 
-      // Camera follows the car
+      // ✅ Camera follow logic (chase cam)
       const followDistance = 5;
       const heightOffset = 2;
 
-      camera.position.x = car.position.x - Math.sin(car.rotation.y) * followDistance;
-      camera.position.z = car.position.z - Math.cos(car.rotation.y) * followDistance;
-      camera.position.y = car.position.y + heightOffset;
+      const forward = new THREE.Vector3(0, 0, 1);
+      forward.applyQuaternion(car.quaternion);
+
+      camera.position.copy(car.position).sub(forward.multiplyScalar(followDistance));
+      camera.position.y += heightOffset;
       camera.lookAt(car.position);
 
       renderer.render(scene, camera);
