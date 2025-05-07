@@ -70,17 +70,22 @@
       speed *= 0.98;
       turn *= 0.9;
 
-      // ✅ Camera follow logic (chase cam)
+      // ✅ CAMERA FOLLOW FIX:
+      // Calculate position behind the car using quaternion for rotation
       const followDistance = 5;
       const heightOffset = 2;
 
       const forward = new THREE.Vector3(0, 0, 1);
-      forward.applyQuaternion(car.quaternion);
+      forward.applyQuaternion(car.rotation);  // Use rotation directly from car
 
+      // Move camera behind car and apply vertical offset
       camera.position.copy(car.position).sub(forward.multiplyScalar(followDistance));
-      camera.position.y += heightOffset;
+      camera.position.y += heightOffset;  // Add some height to the camera
+
+      // Always look at the car
       camera.lookAt(car.position);
 
+      // Render the scene
       renderer.render(scene, camera);
     }
 
