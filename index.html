@@ -14,30 +14,37 @@
   <script>
     // Scene setup
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Ground
+    // Ground setup
     const groundGeo = new THREE.PlaneGeometry(100, 100);
     const groundMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
     const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
+    ground.rotation.x = -Math.PI / 2;  // Make it flat
+    ground.position.y = -0.25;  // Lower the ground slightly so the car is above it
     scene.add(ground);
 
-    // Lighting
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-    sun.position.set(10, 10, 5);
-    scene.add(sun);
+    // Lighting setup
+    const ambientLight = new THREE.AmbientLight(0x404040, 1); // Soft white light
+    scene.add(ambientLight);
 
-    // Car (cube)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Directional light (simulating the sun)
+    directionalLight.position.set(10, 10, 5); // Positioning the light
+    scene.add(directionalLight);
+
+    // Car setup (a simple cube for now)
     const carGeo = new THREE.BoxGeometry(1, 0.5, 2);
     const carMat = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const car = new THREE.Mesh(carGeo, carMat);
-    car.position.y = 0.25;
+    car.position.y = 0.25;  // Slightly above the ground
     scene.add(car);
+
+    // Camera positioning
+    camera.position.set(0, 2, -5); // Position camera behind the car
+    camera.lookAt(car.position); // Make sure the camera is looking at the car
 
     // Input tracking
     const keys = {};
@@ -71,14 +78,12 @@
       turn *= 0.9;
 
       // ✅ CAMERA FOLLOW FIX:
-      // Calculate position behind the car using quaternion for rotation
       const followDistance = 5;
       const heightOffset = 2;
 
       const forward = new THREE.Vector3(0, 0, 1);
       forward.applyQuaternion(car.rotation);  // Use rotation directly from car
 
-      // Move camera behind car and apply vertical offset
       camera.position.copy(car.position).sub(forward.multiplyScalar(followDistance));
       camera.position.y += heightOffset;  // Add some height to the camera
 
