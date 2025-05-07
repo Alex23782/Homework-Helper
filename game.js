@@ -1,6 +1,8 @@
 let score = 0;
+let highScore = 0;
 let timeLeft = 10;
 let timerStarted = false;
+let countdown;
 
 function increaseScore() {
   if (!timerStarted) {
@@ -16,14 +18,19 @@ function increaseScore() {
 
 function startTimer() {
   const timerElement = document.getElementById("timer");
-  const countdown = setInterval(() => {
+
+  countdown = setInterval(() => {
     timeLeft--;
     timerElement.innerText = "Time left: " + timeLeft + "s";
 
     if (timeLeft <= 0) {
       clearInterval(countdown);
-      alert("Time's up! Final score: " + score);
+      endGame();
     }
   }, 1000);
 }
 
+function endGame() {
+  if (score > highScore) {
+    highScore = score;
+    document.getElementById("high-score").
