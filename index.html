@@ -5,26 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      text-align: center;
       font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       margin-top: 50px;
     }
+
+    #high-score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+    }
+
     button {
       font-size: 24px;
       padding: 10px 20px;
-      margin-top: 20px;
+      margin: 10px;
     }
+
     #score, #timer {
       font-size: 20px;
     }
   </style>
 </head>
 <body>
+  <div id="high-score">High Score: 0</div>
+
   <h1>Click Game</h1>
   <p>Click the button as many times as you can in 10 seconds!</p>
   <p id="score">Score: 0</p>
   <p id="timer">Time left: 10s</p>
+
   <button onclick="increaseScore()">Click me!</button>
+  <button onclick="resetGame()">Reset</button>
 
   <script src="game.js"></script>
 </body>
