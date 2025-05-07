@@ -1,14 +1,33 @@
-# Simple Click Game with Timer
+# 3D Drift Game
 
-A basic web game where you click a button to increase your score within a 10-second time limit. Built with HTML, CSS, and JavaScript.
+A simple 3D car drift game built with Three.js. Drive a car around a flat track using basic keyboard controls (`W`, `A`, `S`, `D`).
 
-## How to Play:
-1. Click the button as many times as you can in 10 seconds.
-2. The score will increase with each click.
-3. Once the time runs out, your final score will appear!
+## Features:
+- 3D car and flat ground with a simple drifting effect.
+- Simple physics for acceleration, turning, and friction.
+- Mobile-friendly (works well on touchscreens, i.e., iPad).
 
-## Technologies Used:
-- HTML
-- CSS
-- JavaScript
+## Controls:
+- **W**: Accelerate
+- **A**: Turn Left
+- **S**: Reverse
+- **D**: Turn Right
 
+## Setup:
+
+To run the game locally:
+
+1. Clone or download this repository.
+2. Open `index.html` in a browser (preferably Chrome or Safari for full compatibility).
+
+Alternatively, you can run the game on platforms like [Glitch](https://glitch.com/) or [Replit](https://replit.com/).
+
+## How to Contribute:
+
+1. Fork the repository and create a new branch.
+2. Make changes and submit a pull request.
+3. Improvements are welcome, like adding car models, better physics, or more interactive features!
+
+## License:
+
+This project is open-source and available under the MIT License.
