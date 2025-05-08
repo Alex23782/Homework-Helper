@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Full Drift Game</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+    #startBtn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+<button id="startBtn">Start Game</button>
+<canvas id="gameCanvas"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+let engineSound, skidSound, soundsReady = false;
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  // Preload the sounds and ensure they are loaded before playing
+  engineSound = new Audio('engine.mp3');
+  engineSound.loop = true;
+  engineSound.volume = 0.5;
+  
+  skidSound = new Audio('skid.mp3');
+  skidSound.volume = 0.6;
+
+  // Ensure the sounds are loaded before allowing the game to start
+  engineSound.load();
+  skidSound.load();
+  
+  engineSound.oncanplaythrough = () => {
+    soundsReady = true;
+    engineSound.play();
+  };
+  
+  document.getElementById('startBtn').style.display = 'none';
+  init();
+});
+
+let scene, camera, renderer, car, velocity;
+const smokeParticles = [], skidMarks = [], keys = {};
+
+function init() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb); // Sky blue
+
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gameCanvas') });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 10, 7.5);
+  scene.add(light);
+
+  // Ground and track
+  const trackTexture = new THREE.TextureLoader().load('track_texture.jpg'); // Track texture (replace with a real texture file)
+  const trackMaterial = new THREE.MeshStandardMaterial({ map: trackTexture });
+
+  const trackGeometry = new THREE.RingGeometry(30, 40, 64);
+  const track = new THREE.Mesh(trackGeometry, trackMaterial);
+  track.rotation.x = -Math.PI / 2;
+  track.position.y = 0.01;
+  scene.add(track);
+
+  // Road markings (lines)
+  const stripeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const stripeGeometry = new THREE.PlaneGeometry(0.2, 2);
+  const stripe1 = new THREE.Mesh(stripeGeometry, stripeMaterial);
+  const stripe2 = new THREE.Mesh(stripeGeometry, stripeMaterial);
+  stripe1.position.set(35, 0.01, 0);
+  stripe2.position.set(-35, 0.01, 0);
+  stripe1.rotation.x = Math.PI / 2;
+  stripe2.rotation.x = Math.PI / 2;
+  scene.add(stripe1);
+  scene.add(stripe2);
+
+  // Car
+  car = new THREE.Mesh(
+    new THREE.BoxGeometry(1, 0.5, 2),
+    new THREE.MeshStandardMaterial({ color: 0xff0000 })
+  );
+  car.position.y = 0.25;
+  scene.add(car);
+
+  velocity = new THREE.Vector3();
+
+  document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+  document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+  animate();
+}
+
+const smokeGeo = new THREE.SphereGeometry(0.1, 8, 8);
+const smokeMat = new THREE.MeshBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.5 });
+
+function emitSmoke(pos) {
+  const s = new THREE.Mesh(smokeGeo, smokeMat.clone());
+  s.position.copy(pos);
+  s.position.y += 0.1;
+  s.scale.setScalar(Math.random() * 0.5 + 0.5);
+  scene.add(s);
+  smokeParticles.push({ mesh: s, life: 1 });
+}
+
+function updateSmoke() {
+  for (let i = smokeParticles.length - 1; i >= 0; i--) {
+    const s = smokeParticles[i];
+    s.life -= 0.02;
+    s.mesh.material.opacity = s.life;
+    s.mesh.scale.multiplyScalar(1.02);
+    if (s.life <= 0) {
+      scene.remove(s.mesh);
+      smokeParticles.splice(i, 1);
+    }
+  }
+}
+
+function createSkidMark(pos) {
+  const geo = new THREE.PlaneGeometry(0.1, 0.4);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide, transparent: true, opacity: 0.4 });
+  const mark = new THREE.Mesh(geo, mat);
+  mark.rotation.x = -Math.PI / 2;
+  mark.position.copy(pos);
+  mark.position.y = 0.02;
+  scene.add(mark);
+  skidMarks.push(mark);
+  if (skidMarks.length > 300) {
+    const old = skidMarks.shift();
+    scene.remove(old);
+  }
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  let accel = 0;
+  let steer = 0;
+  if (keys['w']) accel = 0.02;
+  if (keys['s']) accel = -0.02;
+  
+  // Increase the steering angle here for sharper turns
+  if (keys['a']) steer = 0.1;  // Sharper turn to the left
+  if (keys['d']) steer = -0.1; // Sharper turn to the right
+
+  // Apply velocity and steering to the car
+  const forward = new THREE.Vector3(Math.sin(car.rotation.y), 0, Math.cos(car.rotation.y));
+  velocity.addScaledVector(forward, accel);
+  velocity.multiplyScalar(0.95);
+
+  if (velocity.length() > 0.01) {
+    car.rotation.y += steer; // Applying the steering effect
+  }
+
+  // Update car position
+  car.position.add(velocity);
+
+  const camOffset = new THREE.Vector3(0, 5, -10).applyAxisAngle(new THREE.Vector3(0, 1, 0), car.rotation.y);
+  camera.position.copy(car.position).add(camOffset);
+  camera.lookAt(car.position);
+
+  const drifting = Math.abs(steer) > 0.02 && velocity.length() > 0.05;
+  if (drifting) {
+    emitSmoke(car.position);
+    createSkidMark(car.position);
+    if (soundsReady && skidSound.paused) {
+      skidSound.currentTime = 0;
+      skidSound.play();
+    }
+  } else {
+    if (soundsReady && !skidSound.paused) skidSound.pause();
+  }
+
+  if (soundsReady) engineSound.playbackRate = 0.5 + velocity.length() * 3;
+
+  updateSmoke();
+  renderer.render(scene, camera);
+}
+</script>
+</body>
+</html>
