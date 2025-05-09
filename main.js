@@ -19,7 +19,7 @@ function init() {
   light.position.set(10, 20, 10);
   scene.add(light);
 
-  // Simple ground for now (could improve this)
+  // Ground with better texture (can be changed to a better texture)
   const groundTex = new THREE.TextureLoader().load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
   groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping;
   groundTex.repeat.set(50, 50);
@@ -30,28 +30,45 @@ function init() {
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
-  // Track Layout (curvy Formula 1 style)
+  // Formula 1 Track Layout with curves and better design
   const trackCurve = new THREE.CatmullRomCurve3([
     new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(20, 0, 20),
-    new THREE.Vector3(40, 0, 15),
-    new THREE.Vector3(60, 0, 10),
-    new THREE.Vector3(80, 0, 25),
+    new THREE.Vector3(20, 0, 30),
+    new THREE.Vector3(40, 0, 25),
+    new THREE.Vector3(60, 0, 15),
+    new THREE.Vector3(80, 0, 20),
     new THREE.Vector3(100, 0, 0),
-    new THREE.Vector3(80, 0, -30),
-    new THREE.Vector3(60, 0, -20),
-    new THREE.Vector3(40, 0, -10),
-    new THREE.Vector3(20, 0, -20),
+    new THREE.Vector3(80, 0, -20),
+    new THREE.Vector3(60, 0, -25),
+    new THREE.Vector3(40, 0, -30),
+    new THREE.Vector3(20, 0, -25),
     new THREE.Vector3(0, 0, 0),
   ], true);
-  
-  const trackGeometry = new THREE.TubeGeometry(trackCurve, 100, 2, 8, true);
+
+  const trackGeometry = new THREE.TubeGeometry(trackCurve, 100, 3, 8, true);
   const trackMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
   const track = new THREE.Mesh(trackGeometry, trackMaterial);
   track.rotation.x = Math.PI / 2;
   scene.add(track);
 
-  // Car (black color)
+  // Pit Stop (non-functional)
+  const pitStop = new THREE.Mesh(
+    new THREE.BoxGeometry(10, 0.2, 5),
+    new THREE.MeshStandardMaterial({ color: 0x333333 })
+  );
+  pitStop.position.set(50, 0.1, 0);
+  scene.add(pitStop);
+
+  // Finish Line
+  const finishLine = new THREE.Mesh(
+    new THREE.PlaneGeometry(5, 10),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
+  );
+  finishLine.rotation.x = -Math.PI / 2;
+  finishLine.position.set(60, 0.12, 0);
+  scene.add(finishLine);
+
+  // Car
   const carBody = new THREE.Mesh(
     new THREE.BoxGeometry(2, 0.5, 4),
     new THREE.MeshStandardMaterial({ color: 0x000000 })
@@ -60,7 +77,7 @@ function init() {
   car = carBody;
   scene.add(car);
 
-  // Start the clock for the lap timer
+  // Start clock for lap time
   clock = new THREE.Clock();
   keys = {};
   animate();
@@ -84,12 +101,12 @@ function animate() {
 
   car.position.add(velocity);
 
-  // Follow camera behind the car
+  // Camera follows the car
   const camOffset = new THREE.Vector3(0, 5, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), car.rotation.y);
   camera.position.copy(car.position).add(camOffset);
   camera.lookAt(car.position);
 
-  // Lap timer (showing the time passed)
+  // Lap timer
   lapTime += clock.getDelta();
   document.getElementById("timer").textContent = lapTime.toFixed(2) + ' s';
 
