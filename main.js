@@ -3,6 +3,8 @@ let velocity = new THREE.Vector3();
 const keys = {};
 let skidMarks = [], smokeParticles = [];
 let startTime = null;
+let lapTime = 0;
+let isInPitStop = false;
 
 document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
@@ -32,44 +34,43 @@ function init() {
   ground.rotation.x = -Math.PI / 2;
   scene.add(ground);
 
-  // Drift track (oval loop)
-  const trackShape = new THREE.CurvePath();
-  const radius = 60;
-  trackShape.add(new THREE.CatmullRomCurve3([
-    new THREE.Vector3(-radius, 0, -radius),
-    new THREE.Vector3( radius, 0, -radius),
-    new THREE.Vector3( radius, 0,  radius),
-    new THREE.Vector3(-radius, 0,  radius),
-    new THREE.Vector3(-radius, 0, -radius)
-  ], true));
-  const tube = new THREE.TubeGeometry(trackShape, 100, 4, 8, true);
-  const track = new THREE.Mesh(tube, new THREE.MeshStandardMaterial({ color: 0x444444 }));
+  // Drift track (curved loop)
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(30, 0, 20),
+    new THREE.Vector3(60, 0, 0),
+    new THREE.Vector3(30, 0, -20),
+    new THREE.Vector3(0, 0, 0),
+  ], true);
+  const geometry = new THREE.TubeGeometry(curve, 100, 2, 8, true);
+  const material = new THREE.MeshStandardMaterial({ color: 0x444444 });
+  const track = new THREE.Mesh(geometry, material);
   track.rotation.x = Math.PI / 2;
   scene.add(track);
 
-  // Pit Stop
+  // Pit Stop (non-functional)
   const pit = new THREE.Mesh(
     new THREE.BoxGeometry(10, 0.2, 5),
     new THREE.MeshStandardMaterial({ color: 0x333333 })
   );
-  pit.position.set(-65, 0.11, 0);
+  pit.position.set(45, 0.11, 0);
   scene.add(pit);
 
-  // Finish line
+  // Finish Line
   const finish = new THREE.Mesh(
     new THREE.PlaneGeometry(4, 10),
     new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide })
   );
   finish.rotation.x = -Math.PI / 2;
-  finish.position.set(-60, 0.12, 0);
+  finish.position.set(55, 0.12, 0);
   scene.add(finish);
 
-  // Car
+  // Car (black)
   const carBody = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 0.5, 2),
+    new THREE.BoxGeometry(2, 0.5, 4),
     new THREE.MeshStandardMaterial({ color: 0x000000 })
   );
-  carBody.position.set(-60, 0.25, 0);
+  carBody.position.set(-5, 0.25, 0);
   car = carBody;
   scene.add(car);
 
@@ -102,8 +103,13 @@ function animate() {
   camera.lookAt(car.position);
 
   // Lap timer
-  const timer = ((performance.now() - startTime) / 1000).toFixed(2);
-  document.getElementById("timer").textContent = timer;
+  lapTime = (performance.now() - startTime) / 1000;
+  document.getElementById("timer").textContent = lapTime.toFixed(2) + ' s';
+
+  // Finish Line Check
+  if (car.position.z > 55 && car.position.z < 60) {
+    console.log("You crossed the finish line!");
+  }
 
   renderer.render(scene, camera);
 }
