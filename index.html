@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Drift Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Drift Game Touch</title>
     <style>
-      body { margin: 0; overflow: hidden; }
+      body { margin: 0; overflow: hidden; font-family: sans-serif; }
       canvas { display: block; }
       #timer {
         position: absolute;
@@ -14,102 +14,14 @@
         background: rgba(0, 0, 0, 0.7);
         color: white;
         padding: 5px 10px;
-        font-family: sans-serif;
         z-index: 1;
       }
-    </style>
-  </head>
-  <body>
-    <div id="timer">0.00 s</div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-let scene, camera, renderer, car, velocity = new THREE.Vector3(), keys = {}, clock;
-
-function init() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xa0d8ef);
-
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  document.body.appendChild(renderer.domElement);
-
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(50, 100, 50);
-  scene.add(light);
-
-  const groundTexture = new THREE.TextureLoader().load("https://threejs.org/examples/textures/terrain/grasslight-big.jpg");
-  groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
-  groundTexture.repeat.set(100, 100);
-  const ground = new THREE.Mesh(
-    new THREE.PlaneGeometry(2000, 2000),
-    new THREE.MeshStandardMaterial({ map: groundTexture })
-  );
-  ground.rotation.x = -Math.PI / 2;
-  scene.add(ground);
-
-  const carMaterial = new THREE.MeshStandardMaterial({ color: 0x111111 });
-  car = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 4), carMaterial);
-  car.position.set(0, 0.5, 0);
-  scene.add(car);
-
-  // Track (simple F1-like loop)
-  const trackPoints = [
-    new THREE.Vector3(0, 0, 0), new THREE.Vector3(50, 0, 100), new THREE.Vector3(100, 0, 0),
-    new THREE.Vector3(50, 0, -100), new THREE.Vector3(0, 0, 0)
-  ];
-  const trackCurve = new THREE.CatmullRomCurve3(trackPoints, true);
-  const trackGeometry = new THREE.TubeGeometry(trackCurve, 100, 2.5, 8, true);
-  const trackMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-  const track = new THREE.Mesh(trackGeometry, trackMaterial);
-  scene.add(track);
-
-  // Finish Line
-  const finish = new THREE.Mesh(
-    new THREE.PlaneGeometry(5, 10),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide })
-  );
-  finish.rotation.x = -Math.PI / 2;
-  finish.position.set(0, 0.1, 0);
-  scene.add(finish);
-
-  camera.position.set(0, 10, -15);
-  camera.lookAt(car.position);
-
-  clock = new THREE.Clock();
-
-  animate();
-}
-
-document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
-document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-
-let lapTime = 0;
-function animate() {
-  requestAnimationFrame(animate);
-
-  const delta = clock.getDelta();
-  lapTime += delta;
-  document.getElementById("timer").textContent = lapTime.toFixed(2) + " s";
-
-  const forward = new THREE.Vector3(Math.sin(car.rotation.y), 0, Math.cos(car.rotation.y));
-  if (keys['w']) velocity.addScaledVector(forward, 0.02);
-  if (keys['s']) velocity.addScaledVector(forward, -0.02);
-  if (keys['a']) car.rotation.y += 0.04;
-  if (keys['d']) car.rotation.y -= 0.04;
-
-  velocity.multiplyScalar(0.98);
-  car.position.add(velocity);
-
-  const camOffset = new THREE.Vector3(0, 5, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), car.rotation.y);
-  camera.position.copy(car.position.clone().add(camOffset));
-  camera.lookAt(car.position);
-
-  renderer.render(scene, camera);
-}
-
-init();
-    </script>
-  </body>
-</html>
+      .controls {
+        position: absolute;
+        bottom: 20px;
+        width: 100%;
+        display: flex;
+        justify-content: space-around;
+        z-index: 2;
+        user-select: none;
+      }
