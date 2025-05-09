@@ -1,4 +1,3 @@
-
 let engineSound, skidSound, soundsReady = false;
 
 document.getElementById('startBtn').addEventListener('click', () => {
@@ -18,7 +17,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
 });
 
 let scene, camera, renderer, car, velocity;
-const keys = {}, skidMarks = [];
+const keys = {}, skidMarks = [], smokeParticles = [];
 
 function init() {
   scene = new THREE.Scene();
@@ -34,23 +33,18 @@ function init() {
   const grassTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/terrain/grasslight-big.jpg');
   grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
   grassTexture.repeat.set(50, 50);
-  const grass = new THREE.Mesh(
+  const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(1000, 1000),
     new THREE.MeshStandardMaterial({ map: grassTexture })
   );
-  grass.rotation.x = -Math.PI / 2;
-  scene.add(grass);
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
 
-  const roadTexture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/brick_bump.jpg');
-  roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
-  roadTexture.repeat.set(5, 1);
-  const trackShape = new THREE.Shape();
-  trackShape.absarc(0, 0, 100, 0, Math.PI * 2, false);
-  const trackGeometry = new THREE.ExtrudeGeometry(trackShape, { depth: 10, bevelEnabled: false });
-  const track = new THREE.Mesh(trackGeometry, new THREE.MeshStandardMaterial({ map: roadTexture, color: 0x333333 }));
-  track.rotation.x = -Math.PI / 2;
-  track.position.y = 0.05;
-  scene.add(track);
+  const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(300, 10), roadMaterial);
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(0, 0.01, 0);
+  scene.add(road);
 
   car = new THREE.Mesh(
     new THREE.BoxGeometry(1, 0.5, 2),
@@ -74,6 +68,15 @@ function addSkidMark(position) {
   mark.position.copy(position);
   scene.add(mark);
   skidMarks.push({ mesh: mark, life: 100 });
+}
+
+function addSmoke(position) {
+  const geometry = new THREE.SphereGeometry(0.1, 8, 8);
+  const material = new THREE.MeshBasicMaterial({ color: 0x555555, transparent: true, opacity: 0.5 });
+  const smoke = new THREE.Mesh(geometry, material);
+  smoke.position.copy(position).add(new THREE.Vector3(0, 0.2, 0));
+  scene.add(smoke);
+  smokeParticles.push({ mesh: smoke, life: 50 });
 }
 
 function animate() {
@@ -108,6 +111,7 @@ function animate() {
 
   if (drifting) {
     addSkidMark(car.position.clone());
+    addSmoke(car.position.clone());
   }
 
   skidMarks.forEach((mark, index) => {
@@ -116,6 +120,16 @@ function animate() {
     if (mark.life <= 0) {
       scene.remove(mark.mesh);
       skidMarks.splice(index, 1);
+    }
+  });
+
+  smokeParticles.forEach((p, index) => {
+    p.life -= 1;
+    p.mesh.material.opacity = p.life / 50;
+    p.mesh.position.y += 0.01;
+    if (p.life <= 0) {
+      scene.remove(p.mesh);
+      smokeParticles.splice(index, 1);
     }
   });
 
